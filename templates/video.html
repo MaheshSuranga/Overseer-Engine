@@ -1,0 +1,9 @@
+{% extends 'layout.html' %}
+
+{% block body %}
+    <div class="row d-flex justify-content-center">
+        <div class="col-md-6">
+            <img height="360" width="640" src="{{ url_for('video_feed') }}">
+        </div>
+    </div>
+{% endblock %}
