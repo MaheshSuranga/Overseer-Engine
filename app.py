@@ -100,11 +100,11 @@ def surveillance():
         # recognizer.recognize(confidence, myfile)
 
         t1 = threading.Thread(target=recognizer.recognize, args=(confidence, myfile))
-        t2 = threading.Thread(target=video_sender.send_surveillance_video, args=[myfile])
+        # t2 = threading.Thread(target=video_sender.send_surveillance_video, args=[myfile])
         t1.daemon = True
-        t2.daemon = True
+        # t2.daemon = True
         t1.start()
-        t2.start()  
+        # t2.start()  
         return render_template('video.html')
 
 @app.route("/video_feed")
@@ -113,6 +113,20 @@ def video_feed():
 	# type (mime type)
 	return Response(recognizer.generate(),
 		mimetype = "multipart/x-mixed-replace; boundary=frame")
+
+@app.route("/current_identification/")
+def current_identification():
+	# return the response generated along with the specific media
+	# type (mime type)
+    if request.headers.get('accept') == 'text/event-stream':
+        return Response(recognizer.current_identification(), mimetype ='text/event-stream')
+
+@app.route("/all_count/")
+def all_count():
+	# return the response generated along with the specific media
+	# type (mime type)
+    if request.headers.get('accept') == 'text/event-stream':
+        return Response(recognizer.all_count(), mimetype ='text/event-stream')
 
 if __name__ == '__main__':
     app.run(debug=True, threaded=True)

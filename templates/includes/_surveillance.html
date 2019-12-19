@@ -1,5 +1,5 @@
 <div>
-    <form style="display: block;" id="myform1" action="http://localhost:5000/surveillance/" method="post"
+    <form style="display: block;" id="myform2" action="http://localhost:5000/surveillance/" method="post"
         enctype="multipart/form-data">
         <div class="form-group">
             <label for="customRange1">Confidence Level : <span type="text" id="rangeVal1"></span></label>
@@ -26,7 +26,6 @@
     function updateTextInput1(val) {
         document.getElementById('rangeVal1').innerHTML = val;
     };
-
     function updateLab(path, id) {
         fileName = path.split('\\');
         length = fileName.length;

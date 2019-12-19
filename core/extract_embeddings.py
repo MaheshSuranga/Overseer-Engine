@@ -5,12 +5,13 @@ import imutils
 import pickle
 import cv2
 import os
+import utils.imageEnhancer as image_enhancer
 
 from flask import jsonify
 
 FD_FOLDER = 'face_detection_model'
 EMBEDDINGS_MODEL = 'openface_nn4.small2.v1.t7'
-DATASET = 'dataset'
+DATASET = 'dataset1'
 SAVED_EMBEDDINGS = 'output/embeddings.pickle'
 
 
@@ -50,6 +51,7 @@ def extract_face_embeddings(inp_confidence):
         # maintaining the aspect ratio), and then grab the image
         # dimensions
         image = cv2.imread(imagePath)
+        image = image_enhancer.image_enhance(image)
         image = imutils.resize(image, width=600)
         (h, w) = image.shape[:2]
 

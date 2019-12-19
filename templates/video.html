@@ -1,9 +1,93 @@
-{% extends 'layout.html' %}
+<script>
+    prevDataLength = 0;
+    rowCount = 1;
+    
+    if (!!window.EventSource) {
+        if (typeof (EventSource) !== "undefined") {
+            console.log("hi");
+            var source = new EventSource('/current_identification/');
+            var source1 = new EventSource('/all_count/')
+            source.onmessage = function (e) {
+                // alert(e);
+                // console.log(e.data);
+                $("#currentName").text(e.data);
+            }
+            source1.onmessage = function (e) {
+                $("tbody").empty();
+                // alert(e);
+                // console.log(e.data);
+                data = JSON.parse(e.data);
+                // $("#allCount").text(JSON.stringify(data));
 
+                keys = Object.keys(data);
+                totalScore = Object.values(data).reduce(getSum);
+                // console.log(keys);
+                Table = document.getElementById('table');
+                currDataLength = keys.length;
+                if(prevDataLength != currDataLength) {
+                    lengthDiff = currDataLength - prevDataLength;
+                    
+                    for(i=0; i< lengthDiff; i++) {
+                        row = Table.insertRow(-1);
+                        console.log(keys);
+                        row.insertCell(0).innerHTML=rowCount;
+                        row.insertCell(1).innerHTML=keys[currDataLength-lengthDiff+i];
+                        row.insertCell(2).innerHTML=data[keys[currDataLength-lengthDiff+i]];
+                        row.insertCell(3).innerHTML=data[keys[currDataLength-lengthDiff+i]]*100/totalScore;
+                        rowCount++;
+                    }
+                } else {
+                    row = document.getElementsByTagName('tr');
+                    for(j=0; j<currDataLength; j++) {
+                        row[j+1].cells[1].innerHTML = keys[j];
+                        row[j+1].cells[2].innerHTML = data[keys[j]];
+                        row[j+1].cells[3].innerHTML = data[keys[j]]*100/totalScore;
+                    }
+                }
+                prevDataLength = currDataLength;
+            }
+        } else {
+            console.log("No server sent support")
+        }
+    };
+
+    function updateCurrentName() {
+        name = url_for('current_identification');
+        console.log(name);
+        document.getElementById('currentName').innerHTML = name;
+    };
+
+    function getSum(total, num) {
+        return total + num;
+    };
+</script>
+{% extends 'layout.html' %}
 {% block body %}
-    <div class="row d-flex justify-content-center">
-        <div class="col-md-6">
+<div class="row">
+    <div class="col-8">
+        <div class="justify-content-center">
             <img height="360" width="640" src="{{ url_for('video_feed') }}">
         </div>
     </div>
+    <div class="col-4">
+        <table id="table" class="table table-hover table-striped table-dark">
+            <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Score</th>
+                    <th scope="col">Probability (%)</th>
+                </tr>
+            </thead>
+            <tbody id="tbody">
+            </tbody>
+        </table>
+        <div id="currentName">
+            { url_for('current_identification') }
+        </div>
+        <div id="allCount">
+            { url_for('current_identification') }
+        </div>
+    </div>
+</div>
 {% endblock %}

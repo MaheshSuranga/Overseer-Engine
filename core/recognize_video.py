@@ -1,6 +1,7 @@
 from imutils.video import VideoStream
 from imutils.video import FileVideoStream
 from imutils.video import FPS
+import json
 import numpy as np
 import argparse
 import imutils
@@ -10,6 +11,7 @@ import cv2
 import os
 import socket
 import threading
+import utils.imageEnhancer as image_enhancer
 
 FD_FOLDER = 'face_detection_model'
 EMBEDDINGS_MODEL = 'openface_nn4.small2.v1.t7'
@@ -19,6 +21,8 @@ LABEL_ENCODER = 'output/le.pickle'
 vs = None
 outputFrame = None
 lock = threading.Lock()
+current = None
+users = {}
 
 # sender = imagezmq.ImageSender(connect_to="tcp://{}:5555".format(
 # 	"192.168.43.132"))
@@ -29,7 +33,7 @@ lock = threading.Lock()
 def recognize(inp_confidence, vid_file):
     # rpiName = socket.gethostname()
     # print(rpiName + "*************")
-    global vs,outputFrame, lock
+    global vs,outputFrame, lock, current, users
 
     # load our serialized face detector from disk
     print("[INFO] loading face detector...")
@@ -54,11 +58,12 @@ def recognize(inp_confidence, vid_file):
 
     # start the FPS throughput estimator
     fps = FPS().start()
-
+    users = {}
     # loop over frames from the video file stream
     while True:
         # grab the frame from the threaded video stream
         frame = vs.read()
+        frame = image_enhancer.image_enhance(frame)
         # sender.send_image(rpiName, cv2.resize(frame, (640,320)))
         
         # resize the frame to have a width of 600 pixels (while
@@ -115,6 +120,11 @@ def recognize(inp_confidence, vid_file):
                 proba = preds[j]
                 name = le.classes_[j]
 
+                current = name
+                if not current in users:
+                    users[current] = 1 * proba
+                else:
+                    users[current] = users[current] + 1 * proba
                 # draw the bounding box of the face along with the
                 # associated probability
                 text = "{}: {:.2f}%".format(name, proba * 100)
@@ -175,3 +185,13 @@ def generate():
 		# yield the output frame in the byte format
 		yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + 
 			bytearray(encodedImage) + b'\r\n')
+
+def current_identification():
+    global current
+    print(current)
+    yield "data: " + current + "\n\n"
+
+def all_count():
+    global users
+    print(users)
+    yield "data: " + json.dumps(users) + "\n\n"
