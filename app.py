@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, Response, redirect, url_for, 
 from werkzeug import secure_filename
 import os
 import utils.videoSender as video_sender
+import utils.frameDivider as frame_divider
 import core.extract_embeddings as embeddings_extractor
 import core.train_model as classfier
 import core.recognize_video as recognizer
@@ -33,9 +34,16 @@ def upload_file():
         fileList = request.files.getlist('file[]')
 
         vidFile = request.files['file']
+        vidFileName = 'video.mp4'
+        vidFile.save(vidFileName)
+        vidFile.stream.seek(0)
+        # myfile = 'video.mp4'
 
-        if fileList:
-            saveLocation = os.path.sep.join([app.config['UPLOAD_FOLDER'],empName])
+        saveLocation = os.path.sep.join([app.config['UPLOAD_FOLDER'],empName])
+        frame_divider.vid_to_images(vidFileName, saveLocation, 15)
+
+        if fileList and len(fileList) != 1:
+            print(fileList, len(fileList))
             if not (os.path.exists(saveLocation)):
                 os.mkdir(saveLocation)
             for f in fileList:
@@ -100,11 +108,11 @@ def surveillance():
         # recognizer.recognize(confidence, myfile)
 
         t1 = threading.Thread(target=recognizer.recognize, args=(confidence, myfile))
-        # t2 = threading.Thread(target=video_sender.send_surveillance_video, args=[myfile])
+        t2 = threading.Thread(target=video_sender.send_surveillance_video, args=[myfile])
         t1.daemon = True
-        # t2.daemon = True
+        t2.daemon = True
         t1.start()
-        # t2.start()  
+        t2.start()  
         return render_template('video.html')
 
 @app.route("/video_feed")
@@ -127,6 +135,11 @@ def all_count():
 	# type (mime type)
     if request.headers.get('accept') == 'text/event-stream':
         return Response(recognizer.all_count(), mimetype ='text/event-stream')
+
+@app.route("/gait_reply/")
+def gait_reply():
+    if request.headers.get('accept') == 'text/event-stream':
+        return Response(video_sender.gait_server_reply(), mimetype ='text/event-stream')
 
 if __name__ == '__main__':
     app.run(debug=True, threaded=True)

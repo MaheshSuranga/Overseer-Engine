@@ -11,7 +11,7 @@ from flask import jsonify
 
 FD_FOLDER = 'face_detection_model'
 EMBEDDINGS_MODEL = 'openface_nn4.small2.v1.t7'
-DATASET = 'dataset1'
+DATASET = 'dataset'
 SAVED_EMBEDDINGS = 'output/embeddings.pickle'
 
 
@@ -52,6 +52,7 @@ def extract_face_embeddings(inp_confidence):
         # dimensions
         image = cv2.imread(imagePath)
         image = image_enhancer.image_enhance(image)
+        image = image_enhancer.image_sharpen(image)
         image = imutils.resize(image, width=600)
         (h, w) = image.shape[:2]
 

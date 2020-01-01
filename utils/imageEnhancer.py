@@ -25,3 +25,12 @@ def image_enhance(img):
     #-----Converting image from LAB Color model to RGB model--------------------
     final = cv2.cvtColor(limg, cv2.COLOR_LAB2BGR)
     return final
+
+def image_sharpen(img):
+    # Load the image
+    # image = cv2.imread("35.0.jpg")
+    # Blur the image
+    gauss = cv2.GaussianBlur(img, (7,7), 0)
+    # Apply Unsharp masking
+    unsharp_image = cv2.addWeighted(img, 2, gauss, -1, 0)
+    return unsharp_image

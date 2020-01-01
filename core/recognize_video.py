@@ -64,6 +64,7 @@ def recognize(inp_confidence, vid_file):
         # grab the frame from the threaded video stream
         frame = vs.read()
         frame = image_enhancer.image_enhance(frame)
+        frame =  image_enhancer.image_sharpen(frame)
         # sender.send_image(rpiName, cv2.resize(frame, (640,320)))
         
         # resize the frame to have a width of 600 pixels (while

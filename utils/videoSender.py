@@ -1,7 +1,8 @@
 import socket
 import io
 
-SERVER_IP = '10.10.20.29'
+SERVER_IP = '10.10.24.129'
+reply_gait = ""
 
 def send_train_video(empName, filename):
     soc = socket.socket()
@@ -24,6 +25,8 @@ def send_train_video(empName, filename):
             print('file sent')
 
 def send_surveillance_video(filename):
+    global reply_gait
+    reply_gait = ''
     soc = socket.socket()
     soc.connect((SERVER_IP,8081))
 
@@ -39,4 +42,9 @@ def send_surveillance_video(filename):
             print('file sent')
             reply = ''
             reply = soc.recv(1024).decode()
+            reply_gait = reply
             print ("reply: "+reply)
+
+def gait_server_reply():
+    global reply_gait
+    yield "data: " + reply_gait + "\n\n"
